@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Twitter</title>
+
+<style>
+body{
+    font-family:Arial;
+    margin:0;
+    padding:20px;
+    background-image:url("https://images.unsplash.com/photo-1611605698335-8b1569810432");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+}
+.container{
+    width:700px;
+    margin:auto;
+    background:rgba(255,255,255,0.92);
+    padding:20px;
+    border-radius:25px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.2);
+}
+h1{text-align:center;color:darkcyan;}
+
+input,textarea{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    box-sizing:border-box;
+    border:1px solid #aaa;
+    border-radius:8px;
+}
+textarea{height:60px;resize:none;}
+
+button{
+    margin:5px;
+    padding:8px 15px;
+    background:darkcyan;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+button:hover{background:#087f8c;}
+
+.post{
+    margin-top:15px;
+    padding:12px;
+    border:1px solid #8ad5d5;
+    border-radius:12px;
+    background:white;
+    box-shadow:0 3px 10px rgba(0,0,0,0.08);
+}
+.post img{
+    max-width:100%;
+    max-height:250px;
+}
+.username{
+    font-weight:bold;
+    color:darkcyan;
+}
+.comment{
+    margin-top:8px;
+    color:#555;
+}
+.profile{
+    padding:12px;
+    background:linear-gradient(135deg,#e0f7fa,#ffffff);
+    border-radius:12px;
+    margin:10px 0;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>TWITTER</h1>
+
+<input id="loginName" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
+
+<h3 id="user">Not Logged In</h3>
+
+<div class="profile" id="profile"></div>
+
+<div id="newPost">
+
+<textarea id="text"
+placeholder="Share your thoughts!!"></textarea>
+
+<input type="file" id="image" accept="image/*">
+
+<button onclick="addPost()">Post</button>
+
+</div>
+
+<div id="posts"></div>
+
+</div>
+
+<script>
+
+let currentUser="";
+
+let users={
+Kavi:{password:"1234",followers:2,following:["Rahul","Rutu"]},
+Rahul:{password:"1111",followers:1,following:["Kavi"]},
+Rutu:{password:"2222",followers:1,following:["Kavi"]}
+};
+
+let posts=[];
+
+function login(){
+
+let name=document.getElementById("loginName").value;
+let pass=document.getElementById("password").value;
+
+if(users[name] && users[name].password==pass){
+
+currentUser=name;
+showPosts();
+
+}else{
+alert("Wrong username or password");
+}
+}
+
+function logout(){
+
+currentUser="";
+
+document.getElementById("user").innerHTML="Not Logged In";
+document.getElementById("profile").innerHTML="";
+
+showPosts();
+}
+
+function follow(name){
+
+let list=users[currentUser].following;
+let pos=list.indexOf(name);
+
+if(pos==-1){
+
+list.push(name);
+users[name].followers++;
+users[currentUser].followers++;
+
+}else{
+
+list.splice(pos,1);
+users[name].followers--;
+users[currentUser].followers--;
+}
+
+showPosts();
+}
+
+function addPost(){
+
+if(currentUser==""){
+alert("Please login first");
+return;
+}
+
+let text=document.getElementById("text").value;
+let file=document.getElementById("image").files[0];
+
+if(text=="" && !file){
+alert("Enter text or select image");
+return;
+}
+
+let image=file ? URL.createObjectURL(file) : "";
+
+posts.unshift({
+user:currentUser,
+text:text,
+image:image,
+likes:[],
+comments:[],
+shares:[]
+});
+
+document.getElementById("text").value="";
+document.getElementById("image").value="";
+
+showPosts();
+}
+
+function showPosts(){
+
+let box=document.getElementById("posts");
+
+box.innerHTML="";
+
+if(currentUser=="") return;
+
+document.getElementById("user").innerHTML=
+"Current User: "+currentUser;
+
+document.getElementById("profile").innerHTML=
+"<b>"+currentUser+"</b><br>"+
+"Followers: "+users[currentUser].followers+
+" | Following: "+users[currentUser].following.length;
+
+posts.forEach((p,i)=>{
+
+let div=document.createElement("div");
+
+div.className="post";
+
+div.innerHTML=
+"<div class='username'>"+p.user+"</div>"+
+"<p>"+p.text+"</p>"+
+(p.image?"<img src='"+p.image+"' width='100%'>":"")+
+"<br>"+
+"<button onclick='like("+i+")'>❤ Like ("+
+p.likes.length+")</button>"+
+"<button onclick='comment("+i+")'>💬 Comment ("+
+p.comments.length+")</button>"+
+"<button onclick='share("+i+")'>➡ Share ("+
+p.shares.length+")</button>"+
+"<div class='comment'>"+
+p.comments.join("<br>")+"</div>"+
+"<small>Shared by: "+
+p.shares.join(", ")+"</small>";
+
+box.appendChild(div);
+
+});
+}
+
+function like(i){
+
+if(!posts[i].likes.includes(currentUser))
+posts[i].likes.push(currentUser);
+
+showPosts();
+}
+
+function comment(i){
+
+let c=prompt("Enter your comment:");
+
+if(c)
+posts[i].comments.push(currentUser+": "+c);
+
+showPosts();
+}
+
+function share(i){
+
+if(!posts[i].shares.includes(currentUser))
+posts[i].shares.push(currentUser);
+
+showPosts();
+}
+
+</script>
+
+</body>
+</html>
